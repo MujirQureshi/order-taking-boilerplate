@@ -1,8 +1,27 @@
-import { Box, Container, Flex, Heading, IconButton } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  Flex,
+  Heading,
+  IconButton,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+} from "@chakra-ui/react";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { BsArrowLeftSquare, BsCart2, BsInfoCircle } from "react-icons/bs";
+import {
+  BsArrowLeftSquare,
+  BsCart2,
+  BsInfoCircle,
+  BsChat,
+} from "react-icons/bs";
 import { useDataProvider } from "../components/data-provider";
+import { Chat } from "../components/chat";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -26,6 +45,20 @@ const Navbar = () => {
           <Heading fontSize={16}>{restaurantInfo?.name}</Heading>
         </Flex>
         <Flex alignItems="center" gap={2}>
+          <Popover>
+            <PopoverTrigger>
+              <IconButton aria-label="chat" icon={<BsChat />} />
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverArrow />
+              <PopoverCloseButton />
+              <PopoverHeader>AI Chat</PopoverHeader>
+              <PopoverBody>
+                <Chat />
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+
           <IconButton
             aria-label="Information"
             icon={<BsInfoCircle />}
