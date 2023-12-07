@@ -17,7 +17,10 @@ import { useForm } from "react-hook-form";
 import { IOrder } from "../models";
 import { BottomButton } from "../components/bottom-button";
 import { useDataProvider } from "../components/data-provider";
-import { calculateOrderTotal } from "../utils/calculations";
+import {
+  calculateOrderSubtotal,
+  calculateOrderTotal,
+} from "../utils/calculations";
 import { PAYMENT_METHODS } from "../utils/constants";
 import { useNavigate } from "react-router-dom";
 
@@ -27,7 +30,13 @@ export const Checkout = () => {
   const { register, handleSubmit, formState } = useForm<IOrder>();
 
   const onSubmit = async (data: IOrder) => {
-    await checkout(data);
+    await checkout({
+      ...data,
+      lines: lines.map((line) => ({ value: [], ...line })),
+      pickupTime: "",
+      subTotal: calculateOrderSubtotal(lines),
+      total: calculateOrderTotal(lines, 13).toFixed(2) as any,
+    });
     navigate("/thankyou");
   };
 
