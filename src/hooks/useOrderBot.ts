@@ -1,8 +1,15 @@
 // @ts-ignore
 import YAML from 'json-to-pretty-yaml';
-import { BaseMessage, SystemMessage } from 'langchain/schema'
-import { useState } from 'react';
+import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from 'langchain/schema'
+import { useEffect, useState } from 'react';
+import { ChatOpenAI } from 'langchain/chat_models/openai';
 import { useDataProvider } from '../components/data-provider';
+
+const model = new ChatOpenAI({
+	temperature: 1,
+	modelName: 'gpt-4-1106-preview',
+	openAIApiKey: process.env.REACT_APP_OPENAI_API_KEY,
+})
 
 export const useOrderBot = () => {
 	const { items } = useDataProvider()
@@ -38,8 +45,38 @@ export const useOrderBot = () => {
 	])
 	const [isLoading, setIsLoading] = useState(false)
 
-	const handleNewMessage = (newMessage: string) => {
-		// TODO: handle new message
+	const handleMount = async () => {
+		setIsLoading(true);
+		const response = await model.generate([[
+			...messages,
+			new AIMessage('say Hi, you are an OrderBot, say how may I help you?')
+		]])
+
+		setMessages(prevState => [
+			...prevState,
+			new AIMessage(response.generations[0][0].text)
+		])
+		setIsLoading(false);
 	}
+
+	const handleNewMessage = async (newMessage: string) => {
+		setIsLoading(true);
+		const tmpMessages = [		
+			...messages,
+			new HumanMessage(newMessage)
+		];
+		setMessages(tmpMessages);
+		const response = await model.generate([tmpMessages])
+		setMessages([
+			...tmpMessages,
+			new AIMessage(response.generations[0][0].text)
+		])
+		setIsLoading(false);
+	}
+
+	useEffect(() => {
+		handleMount();
+	}, [])
+
 	return { messages, handleNewMessage, isLoading };
 }
