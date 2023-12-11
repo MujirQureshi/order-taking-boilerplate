@@ -8,11 +8,10 @@ import {
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-
-const messages: any[] = [];
-const isLoading = true;
+import { useOrderBot } from "../hooks/useOrderBot";
 
 export const Chat: FC = () => {
+  const { handleNewMessage, isLoading, messages } = useOrderBot();
   return (
     <div style={{ position: "relative", height: "300px" }}>
       <MainContainer>
@@ -36,7 +35,7 @@ export const Chat: FC = () => {
           <MessageInput
             disabled={isLoading}
             placeholder="Type message here"
-            onSend={console.log}
+            onSend={handleNewMessage}
           />
         </ChatContainer>
       </MainContainer>
