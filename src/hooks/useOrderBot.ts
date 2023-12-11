@@ -1,7 +1,11 @@
+// @ts-ignore
+import YAML from 'json-to-pretty-yaml';
 import { BaseMessage, SystemMessage } from 'langchain/schema'
 import { useState } from 'react';
+import { useDataProvider } from '../components/data-provider';
 
 export const useOrderBot = () => {
+	const { items } = useDataProvider()
 	const [messages, setMessages] = useState<BaseMessage[]>([
 		new SystemMessage(
       `You are OrderBot, an automated service to collect orders for a restraunt.
@@ -24,6 +28,11 @@ export const useOrderBot = () => {
 	Make sure to clarify all variant selections to uniquely identiy items \
 	You respond in a short, very conversational friendly style.
 	The menu includes \
+	${YAML.stringify(
+    items.map(
+      ({ image, category, createdate, createby, lastupdate, ...item }) => item
+    )
+  )}
 				`
     ),
 	])
