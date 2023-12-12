@@ -88,7 +88,34 @@ export const useOrderBot = () => {
 		})
 
 		if (evaluatorResponse.score) {
-			alert('Ready to send order');
+			const response = await model.generate([[
+				...tmpMessages,
+				new AIMessage(latestAiMessage),
+				new AIMessage(`Summarize the customer's order, personal information and payment method perferrance. Include menu item name, price, quantity, and variants. For variants include the variant title, the selected option and variant selection price. 
+
+				Desired output For example:
+				${YAML.stringify({
+					name: 'Azim Ahmed',
+					phone: '9999999999',
+					email: 'ximxim@ximxim.ca',
+					paymentMethod: 'cash',
+					orderSummary: [
+						{ item: '2x Apple juice: $4.98' },
+						{ item: '1x Build your own pizza: $7.99', choices: [
+							{ type: 'Size', choice: 'Large', price: '$5.00' },
+							{ type: 'Crust', choice: 'Thick' },
+							{ type: 'Toppings', choice: [
+								{ label: 'No cheese' },
+								{ label: 'Chicken', price: '$2.25' },
+								{ label: 'Mushrooms', price: '$2.25' },
+							] },
+						] },
+					]
+				})}
+				`),
+			]]);
+
+			console.log(response.generations[0][0].text)
 		}
 	}
 
