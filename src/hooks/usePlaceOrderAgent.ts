@@ -2,6 +2,9 @@ import z from 'zod';
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { DynamicStructuredTool } from "langchain/tools";
+import { useDataProvider } from '../components/data-provider';
+import { useNavigate } from 'react-router-dom';
+import { calculateOrderSubtotal, calculateOrderTotal } from '../utils/calculations';
 
 const model = new ChatOpenAI({
 	temperature: 1,
@@ -37,14 +40,24 @@ const schema = z.object({
 });
 
 export const usePlaceOrderAgent = () => {
+	const { checkout } = useDataProvider()
+	const navigate = useNavigate()
 	const call = async (input: string) => {
 		const tools = [
 			new DynamicStructuredTool({
 				name: "placeOrder",
 				description: "Useful for when customer wants to place an order",
 				schema,
-				func: async (args) => {
-					console.log(args)
+				func: async (data: any) => {
+					const lines = data.items;
+					await checkout({
+						...data,
+						lines: lines.map((line: any) => ({ value: [], ...line })),
+						pickupTime: "",
+						subTotal: calculateOrderSubtotal(lines),
+						total: calculateOrderTotal(lines, 13).toFixed(2) as any,
+					});
+					navigate("/thankyou");
 					return 'Places the order successfully';
 				},
 				returnDirect: false, // This is an option that allows the tool to return the output directly
