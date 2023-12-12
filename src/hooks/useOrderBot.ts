@@ -4,6 +4,7 @@ import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from 'langchain/s
 import { useEffect, useState } from 'react';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
 import { useDataProvider } from '../components/data-provider';
+import { loadEvaluator } from 'langchain/evaluation';
 
 const model = new ChatOpenAI({
 	temperature: 1,
@@ -67,11 +68,28 @@ export const useOrderBot = () => {
 		];
 		setMessages(tmpMessages);
 		const response = await model.generate([tmpMessages])
+		const latestAiMessage = response.generations[0][0].text;
 		setMessages([
 			...tmpMessages,
-			new AIMessage(response.generations[0][0].text)
+			new AIMessage(latestAiMessage)
 		])
 		setIsLoading(false);
+		const evaluator = await loadEvaluator('criteria', {
+			llm: model,
+			criteria: {
+				name: "orderPlacingCheck",
+				critiqueRequest:
+					"Identify specific ways in which the assistant’s last response is asking to pick up the order in 20 mins",
+			}
+		})
+		const evaluatorResponse = await evaluator.evaluateStrings({
+			input: "message",
+			prediction: latestAiMessage,
+		})
+
+		if (evaluatorResponse.score) {
+			alert('Ready to send order');
+		}
 	}
 
 	useEffect(() => {
