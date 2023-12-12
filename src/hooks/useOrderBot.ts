@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
 import { useDataProvider } from '../components/data-provider';
 import { loadEvaluator } from 'langchain/evaluation';
+import { usePlaceOrderAgent } from './usePlaceOrderAgent';
 
 const model = new ChatOpenAI({
 	temperature: 1,
@@ -14,6 +15,7 @@ const model = new ChatOpenAI({
 
 export const useOrderBot = () => {
 	const { items } = useDataProvider()
+	const { call } = usePlaceOrderAgent();
 	const [messages, setMessages] = useState<BaseMessage[]>([
 		new SystemMessage(
       `You are OrderBot, an automated service to collect orders for a restraunt.
@@ -115,7 +117,7 @@ export const useOrderBot = () => {
 				`),
 			]]);
 
-			console.log(response.generations[0][0].text)
+			await call(response.generations[0][0].text)
 		}
 	}
 

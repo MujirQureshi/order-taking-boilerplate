@@ -1,5 +1,13 @@
 import z from 'zod';
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { initializeAgentExecutorWithOptions } from "langchain/agents";
+import { DynamicStructuredTool } from "langchain/tools";
 
+const model = new ChatOpenAI({
+	temperature: 1,
+	modelName: 'gpt-4-1106-preview',
+	openAIApiKey: process.env.REACT_APP_OPENAI_API_KEY,
+})
 const schema = z.object({
 	items: z
 		.array(
@@ -29,6 +37,27 @@ const schema = z.object({
 });
 
 export const usePlaceOrderAgent = () => {
-	return null;
+	const call = async (input: string) => {
+		const tools = [
+			new DynamicStructuredTool({
+				name: "placeOrder",
+				description: "Useful for when customer wants to place an order",
+				schema,
+				func: async (args) => {
+					console.log(args)
+					return 'Places the order successfully';
+				},
+				returnDirect: false, // This is an option that allows the tool to return the output directly
+			}),
+		];
+		const executor = await initializeAgentExecutorWithOptions(tools, model, {
+			agentType: "structured-chat-zero-shot-react-description",
+			verbose: true,
+		});
+
+		await executor.invoke({ input });
+	}
+
+	return { call };
 }
 
